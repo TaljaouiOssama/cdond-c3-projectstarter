@@ -119,7 +119,7 @@ jobs:
       - run:
           name: Run Playbook and Configure server
           command: |
-            ansible-playbook configure-server.yml -i inventory
+            ansible-playbook configure-server.yml -i inventory.txt
       
 workflows:
   default:
@@ -138,6 +138,7 @@ workflows:
       - scan-backend: 
           requires:
             - build-backend
-      - deploy-infrastructure
+      # - deploy-infrastructure
+      - configure-infrastructure
     
     
