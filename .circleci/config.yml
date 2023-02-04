@@ -182,7 +182,7 @@ workflows:
       #     requires:
       #       - scan-frontend
       #       - scan-backend
-      - configure-infrastructure:
+      - configure-infrastructure
       
   
     
