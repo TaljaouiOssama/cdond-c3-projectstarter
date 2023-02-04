@@ -151,14 +151,24 @@ jobs:
           command: |
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
-    # run-migrations:
-    #   docker:
-    #   - image: circleci/node:13.8.0
-    #   steps:
-    #     - checkout
-    #     - run:
-    #         name: scan frontend
-    #         command: |
+  run-migrations:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Run migrations
+          command: |
+            cd backend
+            npm install
+            npm run migrations > migrations_dump.txt
+      - run:
+          name: Send migration status to kvdb.io
+          command: |
+            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
+            then
+              curl https://kvdb.io/${KVDB_BUCKET}/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+            fi 
               
       
 workflows:
@@ -182,7 +192,8 @@ workflows:
       #     requires:
       #       - scan-frontend
       #       - scan-backend
-      - configure-infrastructure
+      # - configure-infrastructure
+      - run-migrations
       
   
     
