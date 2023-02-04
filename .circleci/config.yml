@@ -83,6 +83,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: install dependencies
+          command: yum -y install tar gzip
+      - run:
           name: Create backend stack
           command: |
             aws cloudformation deploy \
@@ -101,6 +104,7 @@ jobs:
       - run: 
           name: destroy
           command: destroy_environment
+          when: on_fail
   configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11
