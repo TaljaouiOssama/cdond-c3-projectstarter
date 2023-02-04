@@ -151,14 +151,14 @@ jobs:
           command: |
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
-    run-migrations:
-      docker:
-      - image: circleci/node:13.8.0
-      steps:
-        - checkout
-        - run:
-            name: scan frontend
-            command: |
+    # run-migrations:
+    #   docker:
+    #   - image: circleci/node:13.8.0
+    #   steps:
+    #     - checkout
+    #     - run:
+    #         name: scan frontend
+    #         command: |
               
       
 workflows:
