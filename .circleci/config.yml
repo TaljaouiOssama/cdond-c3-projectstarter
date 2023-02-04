@@ -192,7 +192,6 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - install_nodejs
       - restore_cache:
           keys: [frontend-build]
       - run:
@@ -220,7 +219,6 @@ jobs:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
-      - install_nodejs
       - add_ssh_keys:
           fingerprints: ["56:8e:7e:7d:6d:ee:4d:e3:e0:f3:64:a2:00:ac:f7:21"]
       - attach_workspace:
