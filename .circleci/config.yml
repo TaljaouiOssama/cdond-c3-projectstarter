@@ -1,6 +1,14 @@
 version: 2.1
-
-jobs:
+commands:
+  destroy_environment:
+    steps:
+      - run:
+          name: Destroy environment 
+          when: on_fail
+          command: |
+            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
+            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
+jobs:   
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -90,6 +98,25 @@ jobs:
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
               --tags project=udapeople
+      - run: 
+          name: destroy
+          command: destroy_environment
+  configure-infrastructure:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["56:8e:7e:7d:6d:ee:4d:e3:e0:f3:64:a2:00:ac:f7:21"] 
+      - run:
+          name: Install Ansible
+          command: |
+            apk add  --update ansible
+      - run:
+          name: Run Playbook and Configure server
+          command: |
+            ansible-playbook configure-server.yml -i inventory
+      
 workflows:
   default:
     jobs:
