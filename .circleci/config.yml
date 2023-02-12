@@ -191,7 +191,7 @@ jobs:
             fi 
   deploy-frontend:
     docker:
-      - image: amazon/aws-cli
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
       - restore_cache:
@@ -199,7 +199,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --update --no-cache tar gzip nodejs npm  curl
+            apk add --update --no-cache tar gzip nodejs npm aws-cli curl
       - attach_workspace:
           at: ~/
       - run:
@@ -274,15 +274,15 @@ workflows:
       # - configure-infrastructure:
       #     requires:
       #       - deploy-infrastructure
-      - run-migrations
+      # - run-migrations
           # requires:
           #   - configure-infrastructure LL
-      - deploy-frontend:
-          requires:
-            - run-migrations
-      - deploy-backend:
-          requires:
-            - run-migrations
+      - deploy-frontend
+          # requires:
+            # - run-migrations
+      - deploy-backend
+          # requires:
+          #   - run-migrations
       
   
     
