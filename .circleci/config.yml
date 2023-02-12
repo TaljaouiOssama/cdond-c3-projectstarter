@@ -226,11 +226,11 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: ["56:8e:7e:7d:6d:ee:4d:e3:e0:f3:64:a2:00:ac:f7:21"]
+      - run: apk add --update --no-cache ansible tar gzip 
       - attach_workspace:
           at: ~/
       - restore_cache:
           keys: [backend-builds]
-      - run: yum -y install tar gzip
       - install_nodejs
       - install_awscli
       - run:
