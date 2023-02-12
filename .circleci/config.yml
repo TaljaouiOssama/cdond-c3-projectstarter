@@ -263,8 +263,8 @@ jobs:
             echo ${BACKEND_IP}
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL=${API_URL}"
-            echo 'Sleeping for 10 minute'
-            sleep 120
+            echo 'Sleeping for 1minute'
+            sleep 60
             if curl -s "${API_URL}/api/status" | grep "ok"
             then
                 return 0
@@ -280,7 +280,7 @@ jobs:
             then
               return 0
             else
-              return 0
+              return 1
             fi         
 workflows:
   default:
