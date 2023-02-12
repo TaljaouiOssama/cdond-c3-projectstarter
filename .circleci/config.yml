@@ -190,16 +190,16 @@ jobs:
               curl -k https://kvdb.io/${KVDB_BUCKET}/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
             fi 
   deploy-frontend:
-    docker:
-      - image: amazon/aws-cli
+    docker: 
+      - image: python:3.10-alpine3.16
     steps:
       - checkout
-      - restore_cache:
-          keys: [frontend-build]
       - attach_workspace:
           at: ~/
-      - run: yum -y install tar gzip
-      - install_nodejs
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update --no-cache tar gzip nodejs npm aws-cli curl
       - run:
           name: Get backend url
           command: |
@@ -218,7 +218,7 @@ jobs:
             npm install
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
-            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive         
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive       
   deploy-backend:
     docker:
       - image: python:3.7-alpine3.11
@@ -277,7 +277,7 @@ workflows:
       - deploy-frontend
           # requires:
             # - run-migrations
-      - deploy-backend
+      #- deploy-backend
           # requires:
           #   - run-migrations
       
