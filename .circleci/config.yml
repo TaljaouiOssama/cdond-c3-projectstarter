@@ -221,65 +221,63 @@ jobs:
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive       
   deploy-backend:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: python:3.10-alpine3.16
     steps:
       - checkout
       - add_ssh_keys:
           fingerprints: ["56:8e:7e:7d:6d:ee:4d:e3:e0:f3:64:a2:00:ac:f7:21"]
-      - run: apk add --update --no-cache ansible tar gzip 
-      - attach_workspace:
+            - attach_workspace:
           at: ~/
-      - restore_cache:
-          keys: [backend-builds]
-      - install_nodejs
-      - install_awscli
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update --no-cache ansible tar gzip nodejs npm aws-cli curl
       - run:
           name: Deploy backend
           command: |
             cd backend
-            npm i
+            npm install
             npm run build
-            cd ..
-            # Zip the directory
-            tar -C backend -czvf artifact.tar.gz .
+            cd .. 
+            tar -C backend -czvf artifact.tar.gz .            
             cd .circleci/ansible
-            echo "Contents  of the inventory.txt file is -------"
+            echo "Contents  of the inventory.txt file is ......"
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
       
 workflows:
   default:
     jobs:
-      # - build-frontend
-      # - build-backend
-      # - test-frontend: 
-      #     requires:
-      #       - build-frontend
-      # - test-backend: 
-      #     requires:
-      #       - build-backend
-      # - scan-frontend: 
-      #     requires:
-      #       - test-frontend
-      # - scan-backend: 
-      #     requires:
-      #       - test-backend
-      # - deploy-infrastructure:
-      #     requires:
-      #       - scan-frontend
-      #       - scan-backend
-      # - configure-infrastructure:
-      #     requires:
-      #       - deploy-infrastructure
-      # - run-migrations
-          # requires:
-          #   - configure-infrastructure LL
-      - deploy-frontend
-          # requires:
-            # - run-migrations
-      #- deploy-backend
-          # requires:
-          #   - run-migrations
+      - build-frontend
+      - build-backend
+      - test-frontend: 
+          requires:
+            - build-frontend
+      - test-backend: 
+          requires:
+            - build-backend
+      - scan-frontend: 
+          requires:
+            - test-frontend
+      - scan-backend: 
+          requires:
+            - test-backend
+      - deploy-infrastructure:
+          requires:
+            - scan-frontend
+            - scan-backend
+      - configure-infrastructure:
+          requires:
+            - deploy-infrastructure
+      - run-migrations:
+          requires:
+            - configure-infrastructure
+      - deploy-frontend:
+          requires:
+            - run-migrations
+      - deploy-backend:
+          requires:
+            - run-migrations
       
   
     
