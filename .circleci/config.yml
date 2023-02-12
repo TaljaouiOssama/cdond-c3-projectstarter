@@ -191,18 +191,15 @@ jobs:
             fi 
   deploy-frontend:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: amazon/aws-cli
     steps:
       - checkout
       - restore_cache:
           keys: [frontend-build]
       - attach_workspace:
           at: ~/
-      - run:
-          name: Install dependencies
-          command: |
-            apk add --update --no-cache tar gzip nodejs npm  curl
-      - install_awscli
+      - run: yum -y install tar gzip
+      - install_nodejs
       - run:
           name: Get backend url
           command: |
@@ -233,10 +230,8 @@ jobs:
           at: ~/
       - restore_cache:
           keys: [backend-builds]
-      - run:
-          name: Install dependencies
-          command: |
-            apk add --update --no-cache ansible tar gzip nodejs npm  curl
+      - run: yum -y install tar gzip
+      - install_nodejs
       - install_awscli
       - run:
           name: Deploy backend
