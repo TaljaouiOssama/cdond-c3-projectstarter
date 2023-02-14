@@ -21,3 +21,4 @@
 
   roles:
     - deploy-backend
+    - configure-prometheus-node-exporter
