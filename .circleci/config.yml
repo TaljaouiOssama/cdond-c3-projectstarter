@@ -19,7 +19,6 @@ commands:
         type: string
         default: "udapeople" 
     steps:
-      - install_awscli
       - run:
           name: Destroy environments
           when: on_fail
@@ -147,8 +146,7 @@ jobs:
             root: ~/
             paths:
               - project/.circleci/ansible/inventory.txt
-      - destroy-environment:
-          workflow-id: ${CIRCLE_WORKFLOW_ID:0:7}    
+      - destroy-environment    
 
   configure-infrastructure:
     docker: 
