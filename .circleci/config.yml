@@ -26,7 +26,26 @@ commands:
             echo "Destroying environment: << parameters.workflow-id >> "
             aws s3 rm s3://udapeople-<<parameters.workflow-id>> --recursive
             aws cloudformation delete-stack --stack-name <<parameters.project>>-backend-<<parameters.workflow-id>>
-            aws cloudformation delete-stack --stack-name <<parameters.project>>-frontend-<<parameters.workflow-id>>   
+            aws cloudformation delete-stack --stack-name <<parameters.project>>-frontend-<<parameters.workflow-id>>
+  revert-migrations:
+    description: Revert the last migration if successfully run in the current workflow.
+    parameters:
+      workflow-id:
+        type: string
+        default: ${CIRCLE_WORKFLOW_ID:0:7}
+    steps:
+      - run:
+          name: Revert migrations
+          when: on_fail
+          command: |
+            export SUCCESS=$(curl --insecure https://kvdb.io/WEMAhgLdFSm2FeCVwC28h3/migration_<<parameters.workflow-id>>)
+            if (( $SUCCESS==1 )); 
+            then
+            cd ~/project/backend
+            npm install
+            npm run build
+            npm run migrations:revert
+            fi
 jobs:
   build-frontend:
     docker:
@@ -191,6 +210,7 @@ jobs:
               curl -k https://kvdb.io/${KVDB_BUCKET}/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
             fi 
       - destroy-environment
+      
   deploy-frontend:
     docker: 
       - image: python:3.10-alpine3.16
@@ -221,7 +241,8 @@ jobs:
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
-      - destroy-environment                    
+      - destroy-environment    
+      - revert-migrations                
   deploy-backend:
     docker: 
       - image: python:3.10-alpine3.16
@@ -249,6 +270,7 @@ jobs:
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
       - destroy-environment
+      - revert-migrations
   smoke-test:
     docker: 
       - image: python:3.10-alpine3.16
@@ -283,11 +305,12 @@ jobs:
             echo ${URL} 
             if curl -s ${URL} | grep "Welcome"
             then
-              return 0
+              return 1
             else
               return 1
             fi      
       - destroy-environment
+      - revert-migrations
 workflows:
   default:
     jobs:
