@@ -47,5 +47,5 @@
     tar xzvf artifact.tar.gz
     npm install
     npm run build
-    cd /home/ubuntu/backend_app_dir/dist
-    pm2 start main.js
+    pm2 stop all
+    pm2 start npm --name backend -- start
