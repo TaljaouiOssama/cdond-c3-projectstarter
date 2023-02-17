@@ -1,38 +1,51 @@
 ---
-  - name: "show remote environment"
-    shell: env
+- name: "update apt repo"
+  become: true
+  apt:
+    update_cache: yes
 
-  - name: "copy src"
-    become: true
-    ansible.posix.synchronize:
-      src: ../../backend
-      dest: /home/ubuntu/udapeople
-      recursive: true
-      archive: no
+- name: "upgrade apt packages"
+  become: true
+  apt:
+    upgrade: yes
 
-  - name: "build backend"
-    shell: |
-      cd /home/ubuntu/udapeople/backend
-      npm install
-      npm run build
-  - name: "delete anything that might already be running"
-    become: true
-    command: pm2 delete all
-    ignore_errors: true
+- name: "remove dependencies that are no longer required"
+  become: true
+  apt:
+    autoremove: yes
 
-  - name: "start server"
-    become: true
-    command: pm2 start -f ./main.js
-    args:
-      chdir: /home/ubuntu/udapeople/backend/dist
-    environment:
-      ENVIRONMENT: production
-      TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION') }}"
-      TYPEORM_MIGRATIONS_DIR: "./migrations"
-      TYPEORM_MIGRATIONS: "./migrations/*.js"
-      TYPEORM_ENTITIES: "./modules/domain/**/*.entity.js"
-      TYPEORM_HOST: "{{ lookup('env', 'TYPEORM_HOST') }}"
-      TYPEORM_PORT: "{{ lookup('env', 'TYPEORM_PORT') }}"
-      TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME') }}"
-      TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD') }}"
-      TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE') }}"
+- name: "install dependencies (nodejs and npm)"
+  become: true
+  apt:
+    name: ["nodejs", "npm"]
+    state: latest
+    update_cache: yes
+
+- name: "install pm2"
+  become: true
+  npm:
+    name: pm2
+    global: yes
+    production: yes
+    state: present
+
+- name: Create backend app directory
+  file:
+    path: ~/backend_app_dir
+    state: directory
+
+- name: "Copy artifact into instance"
+  become: true
+  copy:
+    src: ~/project/artifact.tar.gz
+    dest: /home/ubuntu/backend_app_dir/artifact.tar.gz
+
+- name: "Start app "
+  become: true
+  shell: |
+    cd /home/ubuntu/backend_app_dir
+    tar xzvf artifact.tar.gz
+    npm install
+    npm run build
+    pm2 stop all
+    pm2 start npm -- start
